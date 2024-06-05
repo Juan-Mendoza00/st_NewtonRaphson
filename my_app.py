@@ -5,6 +5,20 @@ from sympy import *
 
 from functions import Newton_Raphson, Newton_Raphson_modified, text_book_chart, stored_values, mdf_stored_values
 
+if 'NR_clicked' not in st.session_state:
+    st.session_state['NR_clicked'] = False
+    st.session_state['NR_data'] = {}
+    st.session_state['M-NR_clicked'] = False
+    st.session_state['M-NR_data'] = {}
+
+
+def NR_run():
+    st.session_state['NR_clicked'] = True
+
+def MNR_run():
+    st.session_state['M-NR_clicked'] = True
+
+
 x = Symbol('x')
 
 # Title
@@ -27,13 +41,13 @@ st.subheader('✍️ Write the function expression $f(x)$')
 
 with st.container(border=True):
     
-    col1, col2 = st.columns([0.6,0.4])
+    col1, col2 = st.columns([0.5,0.5])
 
     with col1:
         expr = st.text_input('Write your function here. Make sure you use **Python Syntax**', value='x')
         
         # Sympyfy the text input
-        func = sympify(expr).expand()
+        func = sympify(expr, rational=True).expand()
         st.write("**Visualize your function:** $f(x)$", func)
 
         # lamdify function and its derivates
@@ -72,10 +86,7 @@ with st.container(border=True):
             key='NR_param iters')
         
         # Button to call tha function
-        run = st.button('Run', type='primary', key='NR call')
-
-# Data column
-    with data_col.container(border=True):
+        run = st.button('Run', type='primary', key='NR call', on_click=NR_run)
         if run:
             # call the function
             value = Newton_Raphson(
@@ -90,10 +101,22 @@ with st.container(border=True):
             index=[f'i = {row[0]}' for row in stored_values],
             columns=['x_i', 'Normalized Error']
             )
+            # save dataframe and value to session variable
+            st.session_state['NR_data']['dataframe'] = dataframe1
+            st.session_state['NR_data']['aprox'] = value
+
+            stored_values.clear()
+
+# Data column
+    with data_col.container(border=True):        
+        if st.session_state['NR_clicked']:
             # show the dataFrame
-            st.dataframe(dataframe1, use_container_width=True, key='NR dataframe')
-            # show the aproximation value
-            st.write(f'- **There is a root in** $x = {value}$')
+            st.dataframe(st.session_state['NR_data']['dataframe'], 
+                         use_container_width=True, 
+                         key='NR dataframe')
+
+            # show the aprox value
+            st.write(f"- **Computed root** $$x = {st.session_state['NR_data']['aprox']}$$")
         else:
             st.caption('Data from every iteration of the method will be displayed here...')
 
@@ -114,7 +137,7 @@ st.write("The modified formula: $x_{i+1} = x_{i} - \\frac{f(x_{i})}{f'(x_{i})}$"
 with st.container(border=True):
     param_col, data_col = st.columns([0.3,0.7]) 
 
-# Parametters column
+    # Parametters column
     with param_col.container(border=True):
         init_val = st.number_input(
             'Initial value $x_{0}$:',
@@ -130,11 +153,9 @@ with st.container(border=True):
             key='M-NR_param iters')
         
         # Button to call tha function
-        run = st.button('Run', type='secondary', key='M-NR call')
-
-# Data column
-    with data_col.container(border=True):
+        run = st.button('Run', type='secondary', key='M-NR call', on_click=MNR_run)
         if run:
+            # call the function
             value = Newton_Raphson_modified(
                 x_i=init_val,
                 i=iters,
@@ -142,15 +163,29 @@ with st.container(border=True):
                 df=df,
                 df2=df2)
             
-
+            # build the dataframe
             dataframe2 = pd.DataFrame(
-            data=[row[1:] for row in mdf_stored_values],
-            index=[f'i = {row[0]}' for row in mdf_stored_values],
-            columns=['x_i', 'Normalized Error']
+                data=[row[1:] for row in mdf_stored_values],
+                index=[f'i = {row[0]}' for row in mdf_stored_values],
+                columns=['x_i', 'Normalized Error']
             )
-            st.dataframe(dataframe2, use_container_width=True, key='M-NR dataframe')
+
+            # modify session variables
+            st.session_state['M-NR_data']['dataframe'] = dataframe2
+            st.session_state['M-NR_data']['aprox'] = value
+
+            mdf_stored_values.clear()
 
 
-            st.write(f'- **There is a root in** $x = {value}$')
+    # Data column
+    with data_col.container(border=True):
+        if st.session_state['M-NR_clicked']:
+            # show the dataframe
+            st.dataframe(st.session_state['M-NR_data']['dataframe'], 
+                         use_container_width=True, 
+                         key='M-NR dataframe')
+            
+            # Show the aproximation
+            st.write(f'- **There is a root in** $x = {st.session_state["M-NR_data"]["aprox"]}$')
         else:
             st.caption('Data from every iteration of the method will be displayed here...')
