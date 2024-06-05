@@ -1,7 +1,6 @@
 from sympy import *
 import numpy as np
 import matplotlib.pyplot as plt
-import streamlit as st
 import pandas as pd
 
 x = Symbol('x')
@@ -17,25 +16,24 @@ def Newton_Raphson(x_i, i, **kwargs):
     function, given an initial value.
 
     ### Parametters
-    - func_expr: The function's expression. A function of the independent variable ' x '.
 
     - x_i: Short for 'x initial'. The initial value for the recursion
     to start with.
 
     - i: The number of iterations desired.
 
-    - *args: When being used in third party programs, pass the functions and its derivates as 
-    additional arguments (f, df, *df2)
+    Pass functions as arguments
+    - *kwargs: (f, df, df2) Pass the lamdified function, lambdified first derivate
+    and lambdified second derivate.
     """
-    # Function passed as key arg or default x
-    func = kwargs.get('sympy_expr', x)
+    # default function
+    func = x**3 + x**2 + x
 
-    # Converted to a python function
-    f = lambdify(x, func)
-    # compute the first derivate and convert to a python function
-    df = lambdify(x, func.diff(x))
+    # Convert or get passed functions
+    f = kwargs.get('f', lambdify(x, func))
+    df = kwargs.get('df',lambdify(x, func.diff(x)))
 
-    # make a list to store values
+    # scope to the list to store values
     global stored_values
 
     if i == 0:
@@ -59,7 +57,9 @@ def Newton_Raphson(x_i, i, **kwargs):
         # print(f'Iteration {i+1}  |  x_{i+1} = {x_II}, relative error: {round(rel_error, 6)}')
         return x_II
     
+
 # Modified method
+mdf_stored_values = []
 def Newton_Raphson_modified(x_i, i, **kwargs):
     """## Newton Raphson Method
     Using the formula for Newton-Rapshon recursion to compute 
@@ -67,21 +67,23 @@ def Newton_Raphson_modified(x_i, i, **kwargs):
     function, given an initial value.
 
     ### Parametters
-    - func_expr: The function's expression. A function of the independent variable ' x '.
 
     - x_i: Short for 'x initial'. The initial value for the recursion
     to start with.
 
     - i: The number of iterations desired.
+    
+    Pass the function and its derivates
+    - f, df, df2: Lambdified functions to make numerical calculations.
     """
 
     # Function passed as key arg or default x
-    func = kwargs.get('sympy_expr', x)
+    func = x**3 + x**2 + x
 
     # Converted to a python function
-    f = lambdify(x, func)
-    df = lambdify(x, func.diff(x))
-    df2 = lambdify(x, func.diff(x,2))
+    f = kwargs.get('f', lambdify(x, func))
+    df = kwargs.get('df',lambdify(x, func.diff(x)))
+    df2 = kwargs.get('df2',lambdify(x, func.diff(x,2)))
 
     if i == 0:
         # print('Initial value: x_0 =', x_i)
@@ -98,6 +100,9 @@ def Newton_Raphson_modified(x_i, i, **kwargs):
 
         # relative error
         rel_error = (abs(x_II - x_I) / abs(x_II))
+
+        global mdf_stored_values
+        mdf_stored_values.append((i+1, x_II, rel_error))
 
         # print(f'Iteration {i+1}  |  x_{i+1} = {x_II}, relative error: {round(rel_error, 6)}')
         return x_II
@@ -131,8 +136,7 @@ def text_book_chart(func:Function, interval:tuple = (-10, 10)):
     return fig
     
 
-if __name__ == '__main__':
-
+def main():
     x, y, z = symbols('x y z')
 
     # Ask for the function expression
@@ -140,24 +144,33 @@ if __name__ == '__main__':
 
     # convert it to sympy expression object and print
     func = sympify(expr).expand()
-    print(f"f(x) = {func} \nf'(x) = {func.diff(x)}")
+    print(f"f(x) = {func} \nf'(x) = {func.diff(x)}\nf''(x) = {func.diff(x,2)}")
 
     # Ask for the parametters
     init_val = float(input('Type the initial value X_0 =  '))
     iters = int(input('How many iterations of the method? Enter an integer value: '))
 
+    # lambdify
+    f = lambdify(x, func)
+    df = lambdify(x, func.diff(x))
+    df2 = lambdify(x, func.diff(x,2))
+
     # execute the function
     val = Newton_Raphson(
         x_i=init_val,
         i=iters,
-        sympy_expr=func)
-    
-    print('aproximation', val)
-    print(len(stored_values))
+        f=f,
+        df=df)
 
+    # Dataframe with iteration info
     df = pd.DataFrame(
         data=[row[1:] for row in stored_values],
         index=[f'i = {int(row[0])}' for row in stored_values],
         columns=['x_i', 'Normalized Error']
         )
     print(df)
+
+    print('aproximation', val)
+
+if __name__ == '__main__':
+    main()
