@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from sympy import *
 
-from functions import Newton_Raphson, Newton_Raphson_modified, text_book_chart, stored_values, mdf_stored_values
+from functions import Newton_Raphson, text_book_chart, stored_values
 
 if 'NR_clicked' not in st.session_state:
     st.session_state['NR_clicked'] = False
@@ -98,8 +98,8 @@ with st.container(border=True):
             # create a dataFrame
             dataframe1 = pd.DataFrame(
             data=[row[1:] for row in stored_values],
-            index=[f'i = {row[0]}' for row in stored_values],
-            columns=['x_i', 'Normalized Error']
+            index=[row[0] for row in stored_values],
+            columns=['x_i', 'Normalized Error (%)']
             )
             # save dataframe and value to session variable
             st.session_state['NR_data']['dataframe'] = dataframe1
@@ -133,7 +133,7 @@ if on:
 st.divider()
 # Modified method section
 st.subheader('💡 Modified Newton-Raphson Method')
-st.write("The modified formula: $x_{i+1} = x_{i} - \\frac{f(x_{i})}{f'(x_{i})}$")
+st.write("The modified formula: $x_{i+1} = x_{i} - \\frac{f(x_{i})f'(x_{i})}{f'(x_{i})^{2} - f(x_{i})f''(x_{i})}$")
 with st.container(border=True):
     param_col, data_col = st.columns([0.3,0.7]) 
 
@@ -156,25 +156,25 @@ with st.container(border=True):
         run = st.button('Run', type='secondary', key='M-NR call', on_click=MNR_run)
         if run:
             # call the function
-            value = Newton_Raphson_modified(
+            value = Newton_Raphson(
                 x_i=init_val,
                 i=iters,
                 f=f,
                 df=df,
-                df2=df2)
+                df2=df2, mod=True)
             
             # build the dataframe
             dataframe2 = pd.DataFrame(
-                data=[row[1:] for row in mdf_stored_values],
-                index=[f'i = {row[0]}' for row in mdf_stored_values],
-                columns=['x_i', 'Normalized Error']
+                data=[row[1:] for row in stored_values],
+                index=[row[0] for row in stored_values],
+                columns=['x_i', 'Normalized Error (%)']
             )
 
             # modify session variables
             st.session_state['M-NR_data']['dataframe'] = dataframe2
             st.session_state['M-NR_data']['aprox'] = value
 
-            mdf_stored_values.clear()
+            stored_values.clear()
 
 
     # Data column

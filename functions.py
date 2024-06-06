@@ -22,22 +22,28 @@ def Newton_Raphson(x_i, i, **kwargs):
 
     - i: The number of iterations desired.
 
-    Pass functions as arguments
+    **Pass functions as arguments**
     - *kwargs: (f, df, df2) Pass the lamdified function, lambdified first derivate
     and lambdified second derivate.
+
+    Choose between simple or modified method
+    - mod: bool - default $$False$$. If true, it will compute the aproximation using the modified
+    method.
     """
     # default function
-    func = x**3 + x**2 + x
+    func = x**3 + x**2 + x - 14
 
     # Convert or get passed functions
     f = kwargs.get('f', lambdify(x, func))
     df = kwargs.get('df',lambdify(x, func.diff(x)))
+    df2 = kwargs.get('df2',lambdify(x, func.diff(x,2)))
 
-    # scope to the list to store values
+    mod = kwargs.get('mod', False)
+
     global stored_values
 
     if i == 0:
-        # print('Initial value: x_0 =', x_i)
+        stored_values.append((f"i={i}", x_i, '--'))
         return x_i
     else:
         # Reduce the iteration number progresively
@@ -46,65 +52,19 @@ def Newton_Raphson(x_i, i, **kwargs):
         # Compute for the immediately previous value
         x_I = Newton_Raphson(x_i, i, **kwargs)
 
-        # NR formula 
-        x_II = x_I - (f(x_I) / df(x_I))
+        if mod:
+             # Modified NR formula 
+            x_II = x_I - (f(x_I)*df(x_I)) / (df(x_I)**2 - f(x_I)*df2(x_I))
+        else:
+            # Simple NR formula 
+            x_II = x_I - (f(x_I) / df(x_I))
 
-        # relative error
-        rel_error = (abs(x_II - x_I) / abs(x_II))
+        # Normalized error
+        rel_error = str((abs(x_II - x_I) / abs(x_II)) * 100) + ' %'
 
-        stored_values.append((i+1, x_II, rel_error))
+        # store iteration values        
+        stored_values.append((f"i={i+1}", x_II, rel_error))
 
-        # print(f'Iteration {i+1}  |  x_{i+1} = {x_II}, relative error: {round(rel_error, 6)}')
-        return x_II
-    
-
-# Modified method
-mdf_stored_values = []
-def Newton_Raphson_modified(x_i, i, **kwargs):
-    """## Newton Raphson Method
-    Using the formula for Newton-Rapshon recursion to compute 
-    the roots of a real-valued continuous and differentiable 
-    function, given an initial value.
-
-    ### Parametters
-
-    - x_i: Short for 'x initial'. The initial value for the recursion
-    to start with.
-
-    - i: The number of iterations desired.
-    
-    Pass the function and its derivates
-    - f, df, df2: Lambdified functions to make numerical calculations.
-    """
-
-    # Function passed as key arg or default x
-    func = x**3 + x**2 + x
-
-    # Converted to a python function
-    f = kwargs.get('f', lambdify(x, func))
-    df = kwargs.get('df',lambdify(x, func.diff(x)))
-    df2 = kwargs.get('df2',lambdify(x, func.diff(x,2)))
-
-    if i == 0:
-        # print('Initial value: x_0 =', x_i)
-        return x_i
-    else:
-        # Reduce the iteration number progresively
-        i -= 1
-        
-        # Compute for the immediately previous value
-        x_I = Newton_Raphson_modified(x_i, i, **kwargs)
-
-        # NR formula 
-        x_II = x_I - (f(x_I)*df(x_I)) / (df(x_I)**2 - f(x_I)*df2(x_I))
-
-        # relative error
-        rel_error = (abs(x_II - x_I) / abs(x_II))
-
-        global mdf_stored_values
-        mdf_stored_values.append((i+1, x_II, rel_error))
-
-        # print(f'Iteration {i+1}  |  x_{i+1} = {x_II}, relative error: {round(rel_error, 6)}')
         return x_II
     
 
@@ -137,7 +97,7 @@ def text_book_chart(func:Function, interval:tuple = (-10, 10)):
     
 
 def main():
-    x, y, z = symbols('x y z')
+    x= symbols('x')
 
     # Ask for the function expression
     expr = input('Write your function (acordding to python syntax): ')
@@ -149,6 +109,7 @@ def main():
     # Ask for the parametters
     init_val = float(input('Type the initial value X_0 =  '))
     iters = int(input('How many iterations of the method? Enter an integer value: '))
+    mod = (input('Modified Newton-Raphson? [true/false]: ')).capitalize()
 
     # lambdify
     f = lambdify(x, func)
@@ -157,16 +118,18 @@ def main():
 
     # execute the function
     val = Newton_Raphson(
-        x_i=init_val,
-        i=iters,
+        x_i=init_val, # initial x_
+        i=iters,    # Number of iterations
         f=f,
-        df=df)
+        df=df,
+        df2=df2,
+        mod=mod)
 
     # Dataframe with iteration info
     df = pd.DataFrame(
         data=[row[1:] for row in stored_values],
-        index=[f'i = {int(row[0])}' for row in stored_values],
-        columns=['x_i', 'Normalized Error']
+        index=[row[0] for row in stored_values],
+        columns=['x_i', 'Normalized Error (%)']
         )
     print(df)
 
