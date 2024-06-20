@@ -4,12 +4,16 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 x = Symbol('x')
-f, df, df2 = symbols('f, df, df2', cls=Function)
 
 stored_values = []
 
-# The system
-def Newton_Raphson(x_i, i, **kwargs):
+# Method implementation
+def Newton_Raphson(
+        func,
+        x_i:float,
+        i:int,
+        **kwargs):
+    
     """## Newton Raphson Method
     Using the formula for Newton-Rapshon recursion to compute 
     the roots of a real-valued continuous and differentiable 
@@ -17,31 +21,37 @@ def Newton_Raphson(x_i, i, **kwargs):
 
     ### Parametters
 
-    - x_i: Short for 'x initial'. The initial value for the recursion
-    to start with.
+    func (sympy.core... expression):
+        A real-valued function expression.
 
-    - i: The number of iterations desired.
+    x_i (float): 
+        Short for 'x initial'. The initial value for the recursion
+        to start with.
 
-    **Pass functions as arguments**
-    - *kwargs: (f, df, df2) Pass the lamdified function, lambdified first derivate
-    and lambdified second derivate.
+    i (int): 
+        The number of iterations desired.
 
-    Choose between simple or modified method
-    - mod: bool - default $$False$$. If true, it will compute the aproximation using the modified
-    method.
+    --- Pass functions as arguments\n
+    *kwargs.(f, df, df2) - Optional: 
+        Pass the lamdified function, lambdified first derivate
+        and lambdified second derivate.
+
+    --- Choose between simple or modified method\n
+    *kwargs.mod (bool) - Optional:
+        Default False. If true, it will compute the aproximation using the modified
+        method.
     """
-    # default function
-    func = x**3 + x**2 + x - 14
 
-    # Convert or get passed functions
+    # Convert -func- or get passed functions (optional)
+    # Note: derivates can be passed instead of being computed below
     f = kwargs.get('f', lambdify(x, func))
     df = kwargs.get('df',lambdify(x, func.diff(x)))
     df2 = kwargs.get('df2',lambdify(x, func.diff(x,2)))
 
     mod = kwargs.get('mod', False)
 
-    global stored_values
-
+    # To store the aproximations
+    stored_values = []
     if i == 0:
         stored_values.append((f"i={i}", x_i, '--'))
         return x_i
