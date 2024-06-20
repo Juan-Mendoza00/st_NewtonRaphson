@@ -51,7 +51,7 @@ def Newton_Raphson(
     mod = kwargs.get('mod', False)
 
     # To store the aproximations
-    stored_values = []
+    global stored_values
     if i == 0:
         stored_values.append((f"i={i}", x_i, '--'))
         return x_i
