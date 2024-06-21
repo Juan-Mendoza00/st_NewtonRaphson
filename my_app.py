@@ -5,6 +5,13 @@ from sympy import *
 
 from analysis import NewtonRaphson, text_book_chart
 
+# Using wide mode
+st.set_page_config(
+    page_title='Newton-Raphson Computer',
+    layout='wide'
+)
+
+# Creating session variables
 if 'NR_clicked' not in st.session_state:
     st.session_state['NR_clicked'] = False
     st.session_state['NR_data'] = {}
@@ -36,8 +43,8 @@ st.markdown("""
 
 st.divider()
 
-# subheader
-st.subheader('✍️ Write the function expression $f(x)$')
+# --- "NORMAL METHOD" SECTION
+st.subheader('✍️ Type the function expression $f(x)$')
 
 with st.container(border=True):
     
@@ -48,19 +55,16 @@ with st.container(border=True):
         
         # Sympyfy the text input
         func = sympify(expr, rational=True).expand()
-        st.write("**Visualize your function:** $f(x)$", func)
+        # get latex representation
+        func_latex = latex(func)
 
-        # lamdify function and its derivates
-        # f = lambdify(x, func)
-        # df = lambdify(x, func.diff(x))
-        # df2 = lambdify(x,func.diff(x,2))
-        
+        st.latex(f"f(x) = {func_latex}")
+
     with col2.container(border=True):
-        st.markdown("**First derivate** $f'(x)$:")
-        st.latex(func.diff(x).expand())
+        st.markdown("**First and Second Derivates:**")
+        st.latex(f"f'(x) = {latex(func.diff(x).expand())}")
 
-        st.markdown("**Second derivate** $f''(x)$:")
-        st.latex(func.diff(x,x).expand())
+        st.latex(f"f''(x) = {latex(func.diff(x,x).expand())}")
 
 
 # Implementation of the method
@@ -68,11 +72,11 @@ st.subheader('📝 Implementing the method')
 st.write("$x_{i+1} = x_{i} - \\frac{f(x_{i})}{f'(x_{i})}$")
 
 with st.container(border=True):
-    st.write('⚙️ Parametter adjusting')
     param_col, data_col = st.columns([0.3,0.7]) 
 
-# Parametters column
+    # Parametters column
     with param_col.container(border=True):
+        st.write('⚙️ **Parametter adjusting**')
         init_val = st.number_input(
             'Initial value $x_{0}$:',
             value=None,
@@ -107,9 +111,7 @@ with st.container(border=True):
             st.session_state['NR_data']['dataframe'] = dataframe1
             st.session_state['NR_data']['aprox'] = value
 
-            # stored_values.clear()
-
-# Data column
+    # Data column
     with data_col.container(border=True):        
         if st.session_state['NR_clicked']:
             # show the dataFrame
@@ -122,19 +124,10 @@ with st.container(border=True):
         else:
             st.caption('Data from every iteration of the method will be displayed here...')
 
-on = st.toggle('Plot the function')
-if on:
-    st.cache_data(func=text_book_chart)
-    # The function is passed into the plotting function
-    fig = text_book_chart(
-            f=lambdify(x, func))
-    
-    
-    st.pyplot(fig)
-
 
 st.divider()
-# Modified method section
+
+# --- MODIFIED METHOD SECTION
 st.subheader('💡 Modified Newton-Raphson Method')
 st.write("The modified formula: $x_{i+1} = x_{i} - \\frac{f(x_{i})f'(x_{i})}{f'(x_{i})^{2} - f(x_{i})f''(x_{i})}$")
 with st.container(border=True):
@@ -175,9 +168,6 @@ with st.container(border=True):
             st.session_state['M-NR_data']['dataframe'] = dataframe2
             st.session_state['M-NR_data']['aprox'] = value
 
-            # stored_values.clear()
-
-
     # Data column
     with data_col.container(border=True):
         if st.session_state['M-NR_clicked']:
@@ -190,3 +180,45 @@ with st.container(border=True):
             st.write(f'- **There is a root in** $x = {st.session_state["M-NR_data"]["aprox"]}$')
         else:
             st.caption('Data from every iteration of the method will be displayed here...')
+
+st.divider()
+
+# --- PLOTTING SECTION
+st.subheader('Visualize the function',
+             help='Visually spot the root of the function')
+
+if "figure" not in st.session_state:
+    st.session_state.figure = None
+
+params, graph = st.columns([0.2,0.8])
+
+# Interval choosing column
+with params:
+    st.write('Choose the X-axis interval')
+    x_lower = st.number_input('Lower bound', value=None, placeholder='x = ')
+    x_upper = st.number_input('Upper bound', value=None, placeholder='x = ')
+
+    plot_graph = st.button('Show')
+    if plot_graph: 
+        # Passing function and interval for x variable
+        fig = text_book_chart(
+                f=lambdify(x, func),
+                interval=(x_lower,x_upper))
+        st.session_state.figure = fig
+        
+    expression_latex = f"f(x) = {latex(func)}"
+    st.latex(expression_latex)
+    st.latex(f"x \in I = [{x_lower}, {x_upper}]")
+
+# Chart column
+with graph.container(border=True):
+
+    place_holder = st.empty()
+
+    if st.session_state.figure is None:
+        place_holder.caption(
+            """Choose values for Lower and Upper bounds of the interval in which you want to visualize the function.
+            Click 'Show' button and you'll see it. """
+        )
+    else:
+        place_holder.pyplot(st.session_state.figure)

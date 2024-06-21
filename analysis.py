@@ -95,6 +95,8 @@ def text_book_chart(f:Function, interval:tuple = (-10, 10)):
     lower = interval[0]
     upper = interval[1]
 
+    interval_lenght = abs(upper-lower)
+
     x = np.linspace(lower, upper, 100)
 
     # Plot
@@ -103,10 +105,21 @@ def text_book_chart(f:Function, interval:tuple = (-10, 10)):
     ax.plot(x,f(x))
 
     # To get a "text book" look: relocate the spines of the figure
-    ax.spines[["left", "bottom"]].set_position('zero')
-    ax.spines[["top", "right"]].set_visible(False)
+    if 0 not in range(int(lower),int(upper) + 1):
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.spines["bottom"].set_position('zero')
+    else:
+        ax.spines[["left", "bottom"]].set_position('zero')
+        ax.spines[["top", "right"]].set_visible(False)
 
-    ax.set_xticks(np.arange(lower, upper+2, 1)) # modify the xticks
+    # Customize xticks
+    if interval_lenght < 8:
+        xticks = np.linspace(lower, upper, 11)
+    else:
+        xticks = np.arange(lower, upper+1, 1)
+        
+    ax.set_xticks(xticks) # modify the xticks
 
     # setting the name of x and y axis
     ax.set_xlabel('x', loc='right', fontstyle='italic', fontsize='large')
