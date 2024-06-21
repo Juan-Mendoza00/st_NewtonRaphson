@@ -9,24 +9,25 @@ method for Numerical Analysis
 """
 
 x = Symbol('x')
+f = Function('f')
 
 class NewtonRaphson:
     """Creates an instance to compute roots of a function using the Newton-Raphson's
     method on the expression passed as the function argument."""
 
     def __init__(self,
-                 function,
-                 modified: bool) -> None:
+                 function_expr,
+                 modified:bool = False) -> None:
         
-        self.function = function
+        self.function = function_expr
         self.modified = modified
         self.stored_aproximations = []
 
         # convert function to python functions to perform calculations
-        self.f_x = lambdify(x, function)
-        self.df_dx = lambdify(x, function.diff(x))
+        self.f_x = lambdify(x, function_expr)
+        self.df_dx = lambdify(x, function_expr.diff(x))
         if modified:
-            self.df2_dx2 = lambdify(x, function.diff(x,x))
+            self.df2_dx2 = lambdify(x, function_expr.diff(x,x))
 
         pass
 
@@ -54,8 +55,17 @@ class NewtonRaphson:
         """
 
         if i == 0:
+
+            # Every time the iteration counter reaches zero it will clean
+            # the list of stored aproximations. That avoids that list 
+            # to grow infinitely.
+            self.stored_aproximations.clear()
+
+            # Once is cleaned, appends the first row and start over again.
             self.stored_aproximations.append((f"i={i}", x_i, '--'))
+
             return x_i
+        
         else:
             # Reduce the iteration number progresively
             i -= 1
@@ -80,7 +90,7 @@ class NewtonRaphson:
     
 
 # Plotting function
-def text_book_chart(func:Function, interval:tuple = (-10, 10)):
+def text_book_chart(f:Function, interval:tuple = (-10, 10)):
     
     lower = interval[0]
     upper = interval[1]
@@ -90,13 +100,13 @@ def text_book_chart(func:Function, interval:tuple = (-10, 10)):
     # Plot
     fig, ax = plt.subplots(figsize=(10,6))
 
-    ax.plot(x,func(x)) # It also works with sympy function f(x)
+    ax.plot(x,f(x))
 
     # To get a "text book" look: relocate the spines of the figure
     ax.spines[["left", "bottom"]].set_position('zero')
     ax.spines[["top", "right"]].set_visible(False)
 
-    ax.set_xticks(np.arange(lower, upper+2, 2)) # modify the xticks
+    ax.set_xticks(np.arange(lower, upper+2, 1)) # modify the xticks
 
     # setting the name of x and y axis
     ax.set_xlabel('x', loc='right', fontstyle='italic', fontsize='large')

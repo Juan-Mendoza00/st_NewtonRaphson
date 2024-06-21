@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from sympy import *
 
-from functions import Newton_Raphson, text_book_chart, stored_values
+from analysis import NewtonRaphson, text_book_chart
 
 if 'NR_clicked' not in st.session_state:
     st.session_state['NR_clicked'] = False
@@ -51,9 +51,9 @@ with st.container(border=True):
         st.write("**Visualize your function:** $f(x)$", func)
 
         # lamdify function and its derivates
-        f = lambdify(x, func)
-        df = lambdify(x, func.diff(x))
-        df2 = lambdify(x,func.diff(x,2))
+        # f = lambdify(x, func)
+        # df = lambdify(x, func.diff(x))
+        # df2 = lambdify(x,func.diff(x,2))
         
     with col2.container(border=True):
         st.markdown("**First derivate** $f'(x)$:")
@@ -66,6 +66,7 @@ with st.container(border=True):
 # Implementation of the method
 st.subheader('📝 Implementing the method')
 st.write("$x_{i+1} = x_{i} - \\frac{f(x_{i})}{f'(x_{i})}$")
+
 with st.container(border=True):
     st.write('⚙️ Parametter adjusting')
     param_col, data_col = st.columns([0.3,0.7]) 
@@ -88,24 +89,25 @@ with st.container(border=True):
         # Button to call tha function
         run = st.button('Run', type='primary', key='NR call', on_click=NR_run)
         if run:
+            # Instance the computer class
+            NR = NewtonRaphson(function_expr=func, modified=False)
             # call the function
-            value = Newton_Raphson(
+            value = NR.compute_root(
                 x_i=init_val,
-                i=iters,
-                f=f,
-                df=df)
+                i=iters)
             
             # create a dataFrame
             dataframe1 = pd.DataFrame(
-            data=[row[1:] for row in stored_values],
-            index=[row[0] for row in stored_values],
+            data=[row[1:] for row in NR.stored_aproximations],
+            index=[row[0] for row in NR.stored_aproximations],
             columns=['x_i', 'Normalized Error (%)']
             )
-            # save dataframe and value to session variable
+
+            # save dataframe and value to session state variables
             st.session_state['NR_data']['dataframe'] = dataframe1
             st.session_state['NR_data']['aprox'] = value
 
-            stored_values.clear()
+            # stored_values.clear()
 
 # Data column
     with data_col.container(border=True):        
@@ -122,10 +124,11 @@ with st.container(border=True):
 
 on = st.toggle('Plot the function')
 if on:
-
+    st.cache_data(func=text_book_chart)
     # The function is passed into the plotting function
     fig = text_book_chart(
-            func=f)
+            f=lambdify(x, func))
+    
     
     st.pyplot(fig)
 
@@ -155,18 +158,16 @@ with st.container(border=True):
         # Button to call tha function
         run = st.button('Run', type='secondary', key='M-NR call', on_click=MNR_run)
         if run:
+            M_NR = NewtonRaphson(function_expr=func, modified=True)
             # call the function
-            value = Newton_Raphson(
+            value = M_NR.compute_root(
                 x_i=init_val,
-                i=iters,
-                f=f,
-                df=df,
-                df2=df2, mod=True)
+                i=iters)
             
             # build the dataframe
             dataframe2 = pd.DataFrame(
-                data=[row[1:] for row in stored_values],
-                index=[row[0] for row in stored_values],
+                data=[row[1:] for row in M_NR.stored_aproximations],
+                index=[row[0] for row in M_NR.stored_aproximations],
                 columns=['x_i', 'Normalized Error (%)']
             )
 
@@ -174,7 +175,7 @@ with st.container(border=True):
             st.session_state['M-NR_data']['dataframe'] = dataframe2
             st.session_state['M-NR_data']['aprox'] = value
 
-            stored_values.clear()
+            # stored_values.clear()
 
 
     # Data column
