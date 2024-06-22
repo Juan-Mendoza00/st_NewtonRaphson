@@ -29,7 +29,7 @@ Welcome to **Newton-Raphson Calculator**! This is an user-friendly application d
 Prerequisites:
 - [Python](https://www.python.org/). Version 3.8 to 3.12 supported
 - The Linux Distribution you're comfortable with (this was developed in [Ubuntu](https://ubuntu.com/) running on [WSL2](https://ubuntu.com/desktop/wsl)). Everything can also be done in Windows through PowerShell.
-- [pip](https://virtualenv.pypa.io/en/latest/) for package management and already comes wiht Python.
+- [pip](https://pip.pypa.io/en/stable/) for package management (already comes wiht Python).
 - A Python environment manager: in this project [virtualenv](https://virtualenv.pypa.io/en/latest/) is used.
 
 
