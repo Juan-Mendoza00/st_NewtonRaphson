@@ -11,6 +11,8 @@ st.set_page_config(
     layout='wide'
 )
 
+# st.sidebar.write('Something')
+
 # Creating session variables
 if 'NR_clicked' not in st.session_state:
     st.session_state['NR_clicked'] = False
@@ -50,15 +52,17 @@ with st.container(border=True):
     
     col1, col2 = st.columns([0.5,0.5])
 
-    with col1:
+    with col1:            
+
         expr = st.text_input('Write your function here. Make sure you use **Python Syntax**', value='x')
         
         # Sympyfy the text input
-        func = sympify(expr, rational=True).expand()
+        func = sympify(st, rational=True).expand()
         # get latex representation
         func_latex = latex(func)
 
         st.latex(f"f(x) = {func_latex}")
+        
 
     with col2.container(border=True):
         st.markdown("**First and Second Derivates:**")
@@ -188,37 +192,47 @@ st.subheader('Visualize the function',
              help='Visually spot the root of the function')
 
 if "figure" not in st.session_state:
-    st.session_state.figure = None
+    st.session_state.figure = False
+    
+    
 
 params, graph = st.columns([0.2,0.8])
 
 # Interval choosing column
 with params:
-    st.write('Choose the X-axis interval')
-    x_lower = st.number_input('Lower bound', value=None, placeholder='x = ')
-    x_upper = st.number_input('Upper bound', value=None, placeholder='x = ')
 
-    plot_graph = st.button('Show')
-    if plot_graph: 
-        # Passing function and interval for x variable
-        fig = text_book_chart(
-                f=lambdify(x, func),
-                interval=(x_lower,x_upper))
-        st.session_state.figure = fig
+    def interval_change():
+        st.session_state.figure = False
+
+    st.write('Choose the X-axis interval')
+    x_lower = st.number_input('Lower bound', value=None, placeholder='x = ',
+                              on_change=interval_change)
+    x_upper = st.number_input('Upper bound', value=None, placeholder='x = ',
+                              on_change=interval_change)
+
+    plot_button = st.button('Show')
         
     expression_latex = f"f(x) = {latex(func)}"
     st.latex(expression_latex)
-    st.latex(f"x \in I = [{x_lower}, {x_upper}]")
+    st.latex(f"x \in I = [{x_lower if x_lower is not None else '-'}, \
+                          {x_upper if x_upper is not None else '-'}]")
 
 # Chart column
+
 with graph.container(border=True):
+
+    if plot_button: 
+        fig = text_book_chart(
+                f=lambdify(x, func),
+                interval=(x_lower,x_upper))
+        st.session_state.figure = True
 
     place_holder = st.empty()
 
-    if st.session_state.figure is None:
+    if st.session_state.figure == False:
         place_holder.caption(
             """Choose values for Lower and Upper bounds of the interval in which you want to visualize the function.
             Click 'Show' button and you'll see it. """
         )
     else:
-        place_holder.pyplot(st.session_state.figure)
+        st.pyplot(fig)
