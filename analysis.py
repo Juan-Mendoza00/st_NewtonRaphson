@@ -54,7 +54,13 @@ class NewtonRaphson:
             The number of iterations desired.
         """
 
-        if i == 0:
+        # Verify if the initial value is already a root
+        val = self.f_x(x_i)
+        dist_to_zero = abs(0-val)
+        if dist_to_zero < 0.00005:
+            return f"x = {x_i} is a good aproximation for a root" 
+
+        if i==0:
 
             # Every time the iteration counter reaches zero it will clean
             # the list of stored aproximations. That avoids that list 
@@ -69,7 +75,7 @@ class NewtonRaphson:
         else:
             # Reduce the iteration number progresively
             i -= 1
-            
+             
             # Compute for the immediately previous value
             x_I = self.compute_root(x_i, i)
 

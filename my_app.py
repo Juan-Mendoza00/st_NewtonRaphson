@@ -57,7 +57,7 @@ with st.container(border=True):
         expr = st.text_input('Write your function here. Make sure you use **Python Syntax**', value='x')
         
         # Sympyfy the text input
-        func = sympify(st, rational=True).expand()
+        func = sympify(expr, rational=True).expand()
         # get latex representation
         func_latex = latex(func)
 
@@ -124,7 +124,8 @@ with st.container(border=True):
                          key='NR dataframe')
 
             # show the aprox value
-            st.write(f"- **Computed root** $$x = {st.session_state['NR_data']['aprox']}$$")
+            st.write(f"- **Computed root** $$x = {st.session_state['NR_data']['aprox']}$$"\
+                     if type(st.session_state['NR_data']['aprox']) is not str else st.session_state['NR_data']['aprox'])
         else:
             st.caption('Data from every iteration of the method will be displayed here...')
 
@@ -218,7 +219,6 @@ with params:
                           {x_upper if x_upper is not None else '-'}]")
 
 # Chart column
-
 with graph.container(border=True):
 
     if plot_button: 
