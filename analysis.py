@@ -22,6 +22,8 @@ class NewtonRaphson:
         self.function = function_expr
         self.modified = modified
         self.stored_aproximations = []
+        # self.last_aprox = None
+        # self.last_rel_error = None
 
         # convert function to python functions to perform calculations
         self.f_x = lambdify(x, function_expr)
@@ -37,7 +39,7 @@ class NewtonRaphson:
         return "Newton-Raphson computer instance"
 
     # Method implementation
-    def compute_root(self, x_i, i):
+    def compute_root(self, x_i, i:50, prec=None):
         
         """## Newton Raphson Method
         Using the formula for Newton-Rapshon recursion to compute 
@@ -52,9 +54,22 @@ class NewtonRaphson:
 
         i (int): 
             The number of iterations desired.
+        
+        Optional: Choose a precision threshold as stoppage criteria for the method using prec parametter.
+
+        prec (float) Default None:
+            The method will stop computing aproximations when the Normalized Error after each iteration
+            is iqual or less than :prec.
+
         """
 
-        if i == 0:
+        # Verify if the initial value is already a root
+        val = self.f_x(x_i)
+        dist_to_zero = abs(0-val)
+        if dist_to_zero < 0.00005:
+            return f"x = {x_i} already aproximates a root." 
+
+        if i==0:
 
             # Every time the iteration counter reaches zero it will clean
             # the list of stored aproximations. That avoids that list 
@@ -69,9 +84,9 @@ class NewtonRaphson:
         else:
             # Reduce the iteration number progresively
             i -= 1
-            
+
             # Compute for the immediately previous value
-            x_I = self.compute_root(x_i, i)
+            x_I = self.compute_root(x_i, i, prec)
 
             if self.modified == True:
                 # Modified NR formula 
@@ -85,10 +100,46 @@ class NewtonRaphson:
 
             # store every iteration value        
             self.stored_aproximations.append((f"i={i+1}", x_II, rel_error))
-
+            
             return x_II
     
+    # Iterative function ---
+    def compute_root_thr(self, x_i:float, precision:float):
 
+        norm_error = 100
+
+        root_aprox = None
+        prev_x = x_i
+
+        i = 0 
+
+        self.stored_aproximations.clear()
+        self.stored_aproximations.append((f"i={i}", x_i, '--'))
+
+        while norm_error > precision:
+            
+            i += 1
+
+            if self.modified == True:
+                # Modified NR formula 
+                root_aprox = prev_x - (self.f_x(prev_x)*self.df_dx(prev_x)) / (self.df_dx(prev_x)**2 - self.f_x(prev_x)*self.df2_dx2(prev_x))
+            else:
+                # Simple NR formula 
+                root_aprox = prev_x - (self.f_x(prev_x) / self.df_dx(prev_x))
+
+            norm_error = abs(root_aprox - prev_x) / abs(root_aprox) * 100 # % (percentage)
+
+            self.stored_aproximations.append((f"i={i}", root_aprox, norm_error))
+
+            # Update previous x variable
+            prev_x = root_aprox
+
+            if i == 20:
+                break
+            
+        return root_aprox
+
+    
 # Plotting function
 def text_book_chart(f:Function, interval:tuple = (-10, 10)):
     
@@ -98,11 +149,12 @@ def text_book_chart(f:Function, interval:tuple = (-10, 10)):
     interval_lenght = abs(upper-lower)
 
     x = np.linspace(lower, upper, 100)
+    y = f(x)
 
     # Plot
     fig, ax = plt.subplots(figsize=(10,6))
 
-    ax.plot(x,f(x))
+    ax.plot(x,y)
 
     # To get a "text book" look: relocate the spines of the figure
     if 0 not in range(int(lower),int(upper) + 1):
@@ -142,15 +194,19 @@ def main():
 
     # Ask for the parametters
     init_val = float(input('Type the initial value X_0 =  '))
-    iters = int(input('How many iterations of the method? Enter an integer value: '))
+    # iters = int(input('How many iterations of the method? Enter an integer value: '))
+    precision = float(input('Choose precision (%) for normalized error'))
     modified = bool((input('Modified Newton-Raphson? [true/false]: ')).capitalize())
 
-    NR = NewtonRaphson(function=func, modified=modified)
+    NR = NewtonRaphson(function_expr=func, modified=modified)
     
-    val = NR.compute_root(
-        x_i=init_val, # initial x_
-        i=iters,    # Number of iterations
-        )
+    # val = NR.compute_root(
+    #     x_i=init_val, # initial x_
+    #     i=iters,    # Number of iterations
+    #     )
+
+    val = NR.compute_root_thr(x_i=init_val,
+                              precision=precision)
 
     # Dataframe with iteration info
     df = pd.DataFrame(
