@@ -324,12 +324,15 @@ with st.container(border=True):
     with data_col.container(border=True):        
         if st.session_state['NR_clicked']:
 
-            df = create_df(st.session_state['NR_data']['dataframe'])
+            try:
+                df = create_df(st.session_state['NR_data']['dataframe'])
 
-            # show the dataFrame
-            st.dataframe(df, 
-                         use_container_width=True, 
-                         key='NR dataframe')
+                # show the dataFrame
+                st.dataframe(df, 
+                        use_container_width=True, 
+                        key='NR dataframe')
+            except:
+                st.error('Something went wrong when loading the iteration results. Try refreshing teh website.')
 
             # show the aprox value
             st.write(f"- **Computed root** $$x = {st.session_state['NR_data']['aprox']}$$"\
