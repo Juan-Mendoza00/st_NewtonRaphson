@@ -148,7 +148,7 @@ def text_book_chart(f:Function, interval:tuple = (-10, 10)):
 
     interval_lenght = abs(upper-lower)
 
-    x = np.linspace(lower, upper, 100)
+    x = np.linspace(lower, upper, 500)
     y = f(x)
 
     # Plot

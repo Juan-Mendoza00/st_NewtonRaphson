@@ -206,13 +206,17 @@ with st.container(border=True):
 
         expr = st.text_input('Write your function here. Make sure you use **Python Syntax**', value='x')
         
+
+        try:
         # Sympyfy the text input
-        func = sympify(expr, rational=True).expand()
+            func = sympify(expr, rational=True).expand()
 
-        # get latex representation
-        func_latex = latex(func)
+            # get latex representation
+            func_latex = latex(func)
 
-        st.latex(f"f(x) = {func_latex}")
+            st.latex(f"f(x) = {func_latex}")
+        except:
+            st.warning('Something went wrong. Make sure the expression has the correct syntax.')
         
 
     with col2.container(border=True):
