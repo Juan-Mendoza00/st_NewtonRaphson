@@ -22,15 +22,16 @@ class NewtonRaphson:
         self.function = function_expr
         self.modified = modified
         self.stored_aproximations = []
-        # self.last_aprox = None
-        # self.last_rel_error = None
-
         # convert function to python functions to perform calculations
-        self.f_x = lambdify(x, function_expr)
-        self.df_dx = lambdify(x, function_expr.diff(x))
+        try:
+            self.f_x = lambdify(x, function_expr)
+            self.df_dx = lambdify(x, function_expr.diff(x))
+        except:
+            print('Incorrect syntax for the function expression')
+            raise SyntaxError
+        
         if modified:
             self.df2_dx2 = lambdify(x, function_expr.diff(x,x))
-
         pass
 
     def __str__(self):

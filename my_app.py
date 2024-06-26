@@ -221,12 +221,14 @@ with st.container(border=True):
 
     with col2.container(border=True):
 
-        st.markdown("**First and Second Derivates:**")
+        try:
+            st.markdown("**First and Second Derivates:**")
 
-        st.latex(f"f'(x) = {latex(func.diff(x).expand())}")
+            st.latex(f"f'(x) = {latex(func.diff(x).expand())}")
 
-        st.latex(f"f''(x) = {latex(func.diff(x,x).expand())}")
-
+            st.latex(f"f''(x) = {latex(func.diff(x,x).expand())}")
+        except:
+            st.warning("Make sure you're using the correct Python Syntax. Try refreshing if the error continues.")
 
 # Implementation of the method
 st.markdown("""
@@ -238,8 +240,11 @@ st.markdown("""
             """)
 st.write("Newton-Raphson Formula: $x_{i+1} = x_{i} - \\frac{f(x_{i})}{f'(x_{i})}$")
 
-# Instance the computer class
-NR = NewtonRaphson(function_expr=func, modified=False)
+try:
+    # Instance the computer class
+    NR = NewtonRaphson(function_expr=func, modified=False)
+except:
+    pass
 
 @st.cache_data
 def create_df(data):
