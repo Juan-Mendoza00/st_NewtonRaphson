@@ -35,6 +35,40 @@ with st.sidebar:
 
         - Check it visually 👀: [Visualize your function](#visualize-the-function)
         """)
+    
+    st.subheader('Try some examples:')
+    with st.expander('Examples from text book: "Métodos Numéricos para Ingenieros"\
+                     - Steven C. Chapra, Raymond P. Canale'):
+        with st.container(border=True):
+            st.markdown("""
+                    $$
+                    2\\sin(\\sqrt{x}) - x 
+                    $$
+                    ```Python
+                    2*sin(sqrt(x)) - x
+                    ```
+                    ---
+                    $$
+                    -1 + 5.5x  - 4x^{2} + 0.5x^{3}
+                    $$
+                    ```Python
+                    -1 + 5.5*x - 4*x**2 + 0.5*x**3
+                    ```
+                    ---
+                    $$
+                    \\cos(x) - x\\sin({x})
+                    $$
+                    ```Python
+                    cos(x) - x*sin(x)
+                    ```
+                    ---
+                    $$
+                    8\\sin({x})e^{-x} - 1
+                    $$
+                    ```Python
+                    8*sin(x)*exp(-x) - 1
+                    ```
+                    """)
 
 
 # Creating session variables
@@ -204,7 +238,8 @@ with st.container(border=True):
 
     with col1:            
 
-        expr = st.text_input('Write your function here. Make sure you use **Python Syntax**', value='x')
+        expr = st.text_input('Write your function here. Make sure you use **Python Syntax**', value='x',
+                             help="Not sure how to write something? Look at some examples at the sidebar.")
         
 
         try:
