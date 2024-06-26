@@ -262,7 +262,7 @@ def save_to_session(data, val):
     st.session_state['NR_data']['aprox'] = val
 
 with st.container(border=True):
-    param_col, data_col = st.columns([0.3,0.7]) 
+    param_col, data_col = st.columns([0.4,0.6]) 
 
     # Parametters column ---
     with param_col.container(border=True):
@@ -324,12 +324,15 @@ with st.container(border=True):
     with data_col.container(border=True):        
         if st.session_state['NR_clicked']:
 
-            df = create_df(st.session_state['NR_data']['dataframe'])
+            try:
+                df = create_df(st.session_state['NR_data']['dataframe'])
 
-            # show the dataFrame
-            st.dataframe(df, 
-                         use_container_width=True, 
-                         key='NR dataframe')
+                # show the dataFrame
+                st.dataframe(df, 
+                        use_container_width=True, 
+                        key='NR dataframe')
+            except:
+                st.error('Something went wrong when loading the iteration results. Try refreshing teh website.')
 
             # show the aprox value
             st.write(f"- **Computed root** $$x = {st.session_state['NR_data']['aprox']}$$"\
