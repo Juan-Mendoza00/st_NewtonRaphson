@@ -29,9 +29,11 @@ with st.sidebar:
 
         ## Try it here: Use the calculator
 
-        - [Newton-Raphson Calculator](#4977956d)
+        ### [Newton-Raphson Calculator](#4977956d)
 
+        - [The modified Formula](#1575ebfb)
 
+        - Check it visually 👀: [Visualize your function](#visualize-the-function)
         """)
 
 
@@ -234,17 +236,21 @@ st.write("Newton-Raphson Formula: $x_{i+1} = x_{i} - \\frac{f(x_{i})}{f'(x_{i})}
 
 # Instance the computer class
 NR = NewtonRaphson(function_expr=func, modified=False)
-def save_info():
+
+@st.cache_data
+def create_df(data):
     # create the dataframe with calculations info
-    dataframe1 = pd.DataFrame(
-    data=[row[1:] for row in NR.stored_aproximations],
-    index=[row[0] for row in NR.stored_aproximations],
+    dataFrame = pd.DataFrame(
+    data=[row[1:] for row in data],
+    index=[row[0] for row in data],
     columns=['Root aproximation (x_i)', 'Normalized Error (%)']
     )
+    return dataFrame
 
+def save_to_session(data, val):
     # save dataframe and value to session state variables
-    st.session_state['NR_data']['dataframe'] = dataframe1
-    st.session_state['NR_data']['aprox'] = value
+    st.session_state['NR_data']['dataframe'] = data
+    st.session_state['NR_data']['aprox'] = val
 
 with st.container(border=True):
     param_col, data_col = st.columns([0.3,0.7]) 
@@ -294,7 +300,7 @@ with st.container(border=True):
             value = NR.compute_root(
                 x_i=init_val,
                 i=iters)
-            save_info()
+            save_to_session(NR.stored_aproximations, value)
             
         elif run and approach == 'Iteration':
             # Call the iterative method
@@ -302,14 +308,17 @@ with st.container(border=True):
                 x_i=init_val,
                 precision=prec
             )
-            save_info()
+            save_to_session(NR.stored_aproximations, value)
 
 
     # Data column ---
     with data_col.container(border=True):        
         if st.session_state['NR_clicked']:
+
+            df = create_df(st.session_state['NR_data']['dataframe'])
+
             # show the dataFrame
-            st.dataframe(st.session_state['NR_data']['dataframe'], 
+            st.dataframe(df, 
                          use_container_width=True, 
                          key='NR dataframe')
 
